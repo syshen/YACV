@@ -728,12 +728,10 @@
   NSDateComponents *comps_end = [cal components:(NSYearCalendarUnit | NSMonthCalendarUnit) fromDate:self.endDate];
   
   NSUInteger total_month = 0;
-  if (comps_end.year > comps_since.year) {
-    total_month = (comps_end.year - comps_since.year - 1) * 12;
-  }
-  
-  total_month += (12 - comps_since.month + 1);
-  total_month += comps_end.month;
+  if (comps_end.year > comps_since.year)
+    total_month = (comps_end.year - comps_since.year) * 12;
+    
+  total_month += comps_end.month - comps_since.month + 1;
   
   return total_month;
 
