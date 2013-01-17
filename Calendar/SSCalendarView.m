@@ -301,7 +301,7 @@
   
   self = [super initWithFrame:frame];
   if (self) {
-    
+
     self.dayLabel = [[UILabel alloc] initWithFrame:(CGRect){CGPointZero, frame.size}];
     self.dayLabel.textAlignment = NSTextAlignmentCenter;
     self.dayLabel.backgroundColor = [UIColor clearColor];
@@ -437,6 +437,35 @@
   
 }
 
+- (NSDate *)dateForIndexPath:(NSIndexPath *)indexPath {
+    NSCalendar *cal = [NSCalendar currentCalendar];
+    NSDateComponents *dcomp = [cal components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate:self.date];
+    dcomp.day = indexPath.row - self.firstDayInWeek + 1;
+    
+    return [cal dateFromComponents:dcomp];
+}
+
+- (NSInteger)numberOfCalendarItemsForIndexPath:(NSIndexPath *)indexPath {
+    NSInteger items = 0;
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(highlightedDatesForCalendar)]) {
+        
+        NSArray *highlightedDates = [self.delegate performSelector:@selector(highlightedDatesForCalendar)];
+        NSDate *dateForRow = [self dateForIndexPath:indexPath];
+        
+        NSDate *begin = dateForRow;
+        [[NSCalendar currentCalendar] rangeOfUnit:NSDayCalendarUnit startDate:&begin interval:NULL forDate:begin];
+        NSDateComponents *oneDay = [[NSDateComponents alloc] init];
+        [oneDay setDay:1];
+        NSDate *end = [[NSCalendar currentCalendar] dateByAddingComponents:oneDay toDate:begin options:0];
+        
+        NSArray *matches = [highlightedDates filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"(SELF >= %@) AND (SELF <= %@)", begin, end]];
+        items = matches.count;
+    }
+    
+    return items;
+}
+
 #pragma mark - UICollectionViewDataSource
 - (NSInteger) numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
   
@@ -547,6 +576,11 @@
     cell.dayLabel.font = [UIFont systemFontOfSize:12];
   else
     cell.dayLabel.font = [UIFont systemFontOfSize:10];
+    
+    NSInteger numCalendarItems = [self numberOfCalendarItemsForIndexPath:indexPath];
+    if (numCalendarItems > 0) {
+        // do something, e.g. add another label/image to the cell
+    }
   
   return cell;
   
@@ -556,10 +590,7 @@
 #pragma mark - UICollectionViewDelegate
 - (void) collectionView:(UICollectionView *)collectionView didDeselectItemAtIndexPath:(NSIndexPath *)indexPath {
 
-  NSCalendar *cal = [NSCalendar currentCalendar];
-  NSDateComponents *dcomp = [cal components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate:self.date];
-  dcomp.day = indexPath.row - self.firstDayInWeek + 1;
-  NSDate *selectedDate = [cal dateFromComponents:dcomp];
+  NSDate *selectedDate = [self dateForIndexPath:indexPath];
   
   if (self.delegate && [self.delegate respondsToSelector:@selector(dateDidSelected:)]) {
     [self.delegate performSelector:@selector(dateDidSelected:) withObject:selectedDate];
