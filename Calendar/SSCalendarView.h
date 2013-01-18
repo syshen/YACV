@@ -38,5 +38,6 @@
 @property (nonatomic, weak) id datasource;
 
 - (id)initWithDateRangeSince:(NSDate*) startDate to:(NSDate*)endDate;
+- (void) rotateToInterfaceOrientation:(UIInterfaceOrientation)orietantion;
 
 @end

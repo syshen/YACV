@@ -407,7 +407,6 @@
     self.calendarGrids.allowsSelection = YES;
     self.calendarGrids.backgroundColor = [UIColor whiteColor];
     
-    self.calendarGrids.backgroundColor = [UIColor whiteColor];
     [self.calendarGrids registerClass:[SSCalendarDayCell class]
            forCellWithReuseIdentifier:@"CalendarDayCell"];
     [self.calendarGrids registerClass:[SSCalendarHeaderView class]
@@ -420,12 +419,6 @@
   }
   return self;
 
-}
-
-- (id)init {
-  
-  return [self initWithFrame:(CGRect){CGPointZero, (CGSize){320,365}}];
-  
 }
 
 - (void) setDate:(NSDate *)date {
@@ -687,28 +680,33 @@
     
     [self addSubview:self.monthFlow];
     
-    UITapGestureRecognizer *tapGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapHandler:)];
-    [self addGestureRecognizer:tapGR];
-    
   }
   
   return self;
   
 }
 
-- (void) tapHandler:(UITapGestureRecognizer*)gr {
-  SSCalendarLineLayout *layout = (SSCalendarLineLayout*) self.monthFlow.collectionViewLayout;
+- (void) rotateToInterfaceOrientation:(UIInterfaceOrientation)orietantion {
+  CGFloat width = [[UIScreen mainScreen] bounds].size.width;
+  CGFloat height = [[UIScreen mainScreen] bounds].size.height;
+
   
-  if ([cellIdentifier isEqualToString:@"SSCalendarMonthCell-line"]) {
+  if (UIInterfaceOrientationIsLandscape(orietantion)) {
+    self.monthFlow.frame = CGRectMake(0, 0, height, width);
+    
+    SSCalendarLineLayout *layout = (SSCalendarLineLayout*) self.monthFlow.collectionViewLayout;
+  
     SSCalendarCoverFlowLayout *newLayout = [[SSCalendarCoverFlowLayout alloc] init];
-    layout.itemSize = newLayout.itemSize = (CGSize)CGSizeMake(self.monthFlow.frame.size.width-100,
-                                                              self.monthFlow.frame.size.height-100);
+    layout.itemSize = newLayout.itemSize = (CGSize)CGSizeMake(220, 220);
     [layout invalidateLayout];
     cellIdentifier = @"SSCalendarMonthCell-coverflow";
   
     [self.monthFlow setCollectionViewLayout:newLayout animated:YES];
     
   } else {
+    self.monthFlow.frame = CGRectMake(0, 0, width, height);
+    
+    SSCalendarCoverFlowLayout *layout = (SSCalendarCoverFlowLayout*) self.monthFlow.collectionViewLayout;
     
     SSCalendarLineLayout *newLayout = [[SSCalendarLineLayout alloc] init];
     layout.itemSize = newLayout.itemSize = self.monthFlow.frame.size;
@@ -721,15 +719,20 @@
   }
   
   [self.monthFlow reloadData];
+  
 }
 
-- (id)initWithDateRangeSince:(NSDate*) startDate to:(NSDate*)endDate {
+- (id)initWithDateRangeSince:(NSDate*)startDate to:(NSDate*)endDate {
   
   self.sinceDate = startDate;
   self.endDate = endDate;
   self.today = [NSDate date];
-
-  return [self initWithFrame:(CGRect){CGPointZero, (CGSize){320,365}}];
+  
+  NSAssert((NSOrderedDescending == [endDate compare:startDate]), @"The ending date should be later then start of the date.");
+  
+  CGFloat width = [[UIScreen mainScreen] bounds].size.width;
+  CGFloat height = [[UIScreen mainScreen] bounds].size.height;
+  return [self initWithFrame:(CGRect){CGPointZero, (CGSize){width,height}}];
   
 }
 
